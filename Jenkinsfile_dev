@@ -1,0 +1,76 @@
+pipeline {
+    parameters{
+        string(name:'GIT_REPO_APP',
+               defaultValue:
+               'https://github.com/PabloGalegoC/spring-boot-maven-angular-starter.git')
+        string(name:'APP_GIT_BRANCH',
+               defaultValue: "**")
+        string(name:'GIT_USER',
+               defaultValue:"losete")   
+    }
+    agent {
+        docker {
+            image 'losete/spring-boot-angular-starter:latest'
+        }
+    }
+    options {
+        copyArtifactPermission('**')
+    }
+    stages {
+        stage('Setup') {
+            steps {
+                sh 'mkdir artifacts'
+                dir("artifacts") {
+                    git branch: "${params.APP_GIT_BRANCH}",
+                        credentialsId: "${params.GIT_USER}",
+                        url: "${params.GIT_REPO_APP}"
+                    sh 'mkdir reports'
+                }
+            }
+        }
+        stage('Validate') {
+            steps {
+                dir("artifacts") {
+                    sh 'mvn validate > reports/validate.txt'
+                }
+            }
+        }
+        stage('Compile') {
+            steps {
+                dir("artifacts") {
+                    sh 'mvn compile'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir("artifacts") {
+                    sh 'mvn test > reports/test.txt'
+                    sh 'find . -type f -regex ".*/target/.*/TEST.*\\.xml" -exec cp {} reports \\;'
+                }
+            }
+        }
+        stage('Deploy to Testing') {
+            steps {
+                script {
+                    if(env.BRANCH_NAME == 'master'){
+                        sh 'tar --exclude=artifacts/reports -cvzf artifacts.tar.gz artifacts'
+                        archiveArtifacts 'artifacts.tar.gz'
+                        build (job: "pipeline_testing", wait: true, propagate: true)
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo 'always'
+        }
+        failure {
+            echo 'failure'
+        }
+        cleanup{
+            cleanWs()
+        }
+    }
+}
