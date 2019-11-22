@@ -11,22 +11,31 @@ pipeline {
         ])
         sh 'tar -xvzf artifacts.tar.gz'
         sh 'ls -la'
+        sh 'mkdir artifacts/reports'
       }
     }
     stage('Deploy'){
         steps{
             dir("artifacts") {
-                sh 'mvn deploy'
+                sh 'mvn deploy > reports/deploy.txt'
             }
         }
     }
   }
   post {
     always {
-        echo 'always'
+        sh 'tar -cvzf reports.tar.gz artifacts/reports'
+        emailext (attachmentsPattern: 'reports.tar.gz',
+            body: 'Workflow result on ${currentBuild.currentResult}',
+            subject: "Jenkins Build ${currentBuild.currentResult} on Job ${env.JOB_NAME}",
+            from: 'notificaciones.torusnewies@gmail.com',
+            replyTo: '',
+            to: 'losetazo@gmail.com'
+        )
     }
-    failure {
-        echo 'failure'
+    success {
+        sh 'tar -cvzf ngboot-app.tar.gz artifacts/backend/target/ngboot-app.jar'
+        archiveArtifacts 'ngboot-app.tar.gz'
     }
     cleanup{
         cleanWs()
