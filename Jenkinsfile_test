@@ -1,5 +1,8 @@
 pipeline {
   agent { docker { image 'losete/spring-boot-angular-starter:latest' } }
+  options {
+    copyArtifactPermission('**')
+  }
   stages {
     stage('Setup pipeline'){
       steps{
@@ -13,5 +16,40 @@ pipeline {
         sh 'ls -la'
       }
     }
+    stage('Parallel Verify and Benchmarks'){
+        parallel {
+            stage('Benchmarks'){
+                steps{
+                    dir("artifacts") {
+                        sh 'mkdir reports'
+                        sh 'curl -o benchmark.sh -s https://gist.githubusercontent.com/Chusca/9a75b4c3926768588fcfbb60f5753463/raw/benchmark.sh'
+                        sh 'bash benchmark.sh'
+                    }
+                }
+            }
+            stage('Verify'){
+                steps{
+                    dir("artifacts") {
+                        sh 'mvn verify'
+                        sh 'tar --exclude=\'artifacts/reports\' -cvzf artifacts.tar.gz artifacts'
+                        archiveArtifacts 'artifacts.tar.gz'
+                        build (job: "pipeline_deploy", wait: true, propagate: true)
+                    }
+                }
+            }
+        }
+    }
+  }
+  post {
+    always {
+        echo 'always'
+    }
+    failure {
+        echo 'failure'
+    }
+    cleanup{
+        cleanWs()
+    }
+      
   }
 }

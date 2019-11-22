@@ -1,0 +1,36 @@
+pipeline {
+  agent { docker { image 'losete/spring-boot-angular-starter:latest' } }
+  stages {
+    stage('Setup pipeline'){
+      steps{
+        step([ $class: 'CopyArtifact',
+        filter: 'artifacts.tar.gz',
+        projectName: 'pipeline_testing',
+        fingerprintArtifacts: true,
+        selector: lastWithArtifacts()
+        ])
+        sh 'tar -xvzf artifacts.tar.gz'
+        sh 'ls -la'
+      }
+    }
+    stage('Deploy'){
+        steps{
+            dir("artifacts") {
+                sh 'mvn deploy'
+            }
+        }
+    }
+  }
+  post {
+    always {
+        echo 'always'
+    }
+    failure {
+        echo 'failure'
+    }
+    cleanup{
+        cleanWs()
+    }
+      
+  }
+}
