@@ -1,0 +1,17 @@
+pipeline {
+  agent { docker { image 'losete/spring-boot-angular-starter:latest' } }
+  stages {
+    stage('Setup pipeline'){
+      steps{
+        step([ $class: 'CopyArtifact',
+        filter: 'artifacts.tar.gz',
+        projectName: 'test-newImage',
+        fingerprintArtifacts: true,
+        selector: lastWithArtifacts()
+        ])
+        sh 'tar -xvzf artifacts.tar.gz'
+        sh 'ls -la'
+      }
+    }
+  }
+}
