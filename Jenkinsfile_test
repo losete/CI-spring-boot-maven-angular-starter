@@ -50,6 +50,9 @@ pipeline {
           to: 'losetazo@gmail.com'
         )
     }
+    failure {
+        archiveArtifacts 'reports.tar.gz'
+    }
     cleanup{
         cleanWs()
     }

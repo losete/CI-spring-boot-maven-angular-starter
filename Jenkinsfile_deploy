@@ -37,6 +37,9 @@ pipeline {
         sh 'tar -cvzf ngboot-app.tar.gz artifacts/backend/target/ngboot-app.jar'
         archiveArtifacts 'ngboot-app.tar.gz'
     }
+    failure {
+        archiveArtifacts 'reports.tar.gz'
+    }
     cleanup{
         cleanWs()
     }
