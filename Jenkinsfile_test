@@ -20,9 +20,20 @@ pipeline {
         parallel {
             stage('Benchmarks'){
                 steps{
-                    dir("artifacts") {
-                        sh 'curl -o benchmark.sh -s https://gist.githubusercontent.com/Chusca/9a75b4c3926768588fcfbb60f5753463/raw/benchmark.sh'
-                        sh 'bash benchmark.sh'
+                    script {
+                        dir("artifacts") {
+                            try {
+                                timeout(time: 10, unit: 'MINUTES') {
+                                    sh 'curl -o benchmark.sh -s https://gist.githubusercontent.com/Chusca/9a75b4c3926768588fcfbb60f5753463/raw/benchmark.sh'
+                                    sh 'bash benchmark.sh'
+                                }
+                            } catch (err) {
+                                // This try catch prevents Jenkins from setting currentBuild to
+                                // ABORTED in case of benchmark failure
+                                writeFile(file: "reports/benchmark_report.txt",
+                                        text: "Benchmarks too slow", encoding: "UTF-8")
+                            }
+                        }
                     }
                 }
             }
