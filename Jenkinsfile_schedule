@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Triggering the main job') {
             steps {
-                build job: 'test-newImage', parameters: [string(name: 'GIT_REPO_APP', 
+                build job: 'pipeline_development', parameters: [string(name: 'GIT_REPO_APP', 
                 value: 'https://github.com/PabloGalegoC/spring-boot-maven-angular-starter.git'), 
                 string(name: 'APP_GIT_BRANCH', value: 'master'), 
                 string(name: 'GIT_USER', value: 'losete')]

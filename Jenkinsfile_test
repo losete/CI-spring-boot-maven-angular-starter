@@ -8,9 +8,9 @@ pipeline {
       steps{
         step([ $class: 'CopyArtifact',
         filter: 'artifacts.tar.gz',
-        projectName: 'test-newImage',
+        projectName: 'pipeline_development',
         fingerprintArtifacts: true,
-        selector: lastWithArtifacts()
+        selector: upstream() 
         ])
         sh 'tar -xvzf artifacts.tar.gz'
         sh 'mkdir artifacts/reports'
