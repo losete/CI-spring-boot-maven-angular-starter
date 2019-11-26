@@ -10,10 +10,11 @@ pipeline {
         filter: 'artifacts.tar.gz',
         projectName: 'test-newImage',
         fingerprintArtifacts: true,
-        selector: lastWithArtifacts()
+        selector: upstream(fallbackToLastSuccessful: true) 
         ])
         sh 'tar -xvzf artifacts.tar.gz'
         sh 'mkdir artifacts/reports'
+        echo String.valueOf(BUILD_NUMBER)
       }
     }
     stage('Parallel Verify and Benchmarks'){
