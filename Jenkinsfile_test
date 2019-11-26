@@ -14,7 +14,6 @@ pipeline {
         ])
         sh 'tar -xvzf artifacts.tar.gz'
         sh 'mkdir artifacts/reports'
-        echo String.valueOf(BUILD_NUMBER)
       }
     }
     stage('Parallel Verify and Benchmarks'){
