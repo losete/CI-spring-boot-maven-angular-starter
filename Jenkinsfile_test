@@ -10,7 +10,7 @@ pipeline {
         filter: 'artifacts.tar.gz',
         projectName: 'test-newImage',
         fingerprintArtifacts: true,
-        selector: lastWithArtifacts()
+        selector: upstream() 
         ])
         sh 'tar -xvzf artifacts.tar.gz'
         sh 'mkdir artifacts/reports'

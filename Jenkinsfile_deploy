@@ -7,7 +7,7 @@ pipeline {
         filter: 'artifacts.tar.gz',
         projectName: 'pipeline_testing',
         fingerprintArtifacts: true,
-        selector: lastWithArtifacts()
+        selector: upstream()
         ])
         sh 'tar -xvzf artifacts.tar.gz'
         sh 'ls -la'
